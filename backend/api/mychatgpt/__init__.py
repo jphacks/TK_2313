@@ -240,19 +240,33 @@ class Chat:
             n=self.n,
             stream=True
         )
+        function_call=None
         for chunk in response:
             #try:
                 delta=chunk["choices"][0]["delta"]
-                if "function_call" in delta:
-                    function_call=delta["function_call"]
-                    if "name" not in function_call:
+                #print(chunk)
+                if "function_call" in delta or function_call:
+                    if not function_call:
+                        function_call=dict(delta["function_call"])
+                    else:
+                        if "function_call" in delta:
+                            if "name" in function_call and "name" in delta["function_call"]:
+                                function_call["name"]+=delta["function_call"]["name"]
+                            if "arguments" in function_call and "arguments" in delta["function_call"]:
+                                function_call["arguments"]+=delta["function_call"]["arguments"]
+                    #print(function_call)
+                    if not chunk["choices"][0]["finish_reason"]:
+                        #print(chunk["choices"][0]["finish_reason"])
                         continue
-                    
+                    #print(function_call)
+                    if function_call["arguments"]!="":
+                        function_call["arguments"]=json.loads(function_call["arguments"])
                     for func in self.functions:
                         if func.name==function_call["name"]:
+                            #print(f"func:{func.name} args:{function_call['arguments']}")
                             params=[function_call["arguments"][param.name] for param in func.param.properties]
                             reply=func.func(*params)
-                            print(f"func:{func.name} reply:{reply}")
+                            #print(f"func:{func.name} reply:{reply}")
                             reply=Message(Role.function,reply,name=func.name)
                             for i in self.send_stream(reply):
                                 yield i
@@ -260,13 +274,13 @@ class Chat:
                     else:
                         for i in self.send_stream(Message(Role.system,"Function not found")):
                             yield i
-                            
+
                 else:
                     if "content" in delta:
                         yield delta["content"]
             #except Exception as e:
         #    print(e)
-                
+
 
 
     def make_log(self) -> list[dict]:
@@ -321,7 +335,6 @@ class Chat:
                 messages=log,
                 n=self.n,
             )
-
 
         return Response(response)
 
