@@ -28,9 +28,14 @@ async def upload_wav(file: UploadFile = File(...)):
 @app.websocket("/event/wav")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    rawData = await websocket.receive_bytes()
+    rawData = await websocket.receive_text()
+    input = json.loads(rawData)
+
     # decode base64
-    voice_input = base64.b64decode(rawData)
+    if (input["kind"] != "send_wav"):
+        await websocket.close()
+        return
+    voice_input = base64.b64decode(input["base64"])
     voice_output = handler.handle_voice_driven(voice_input)
 
     base64str = str(base64.b64encode(voice_output[0]))
