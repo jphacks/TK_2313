@@ -9,6 +9,10 @@ readme = "README.md"
 python = "^3.11"
 fastapi = "^0.104.0"
 uvicorn = "^0.23.2"
+python-dotenv = "^1.0.0"
+python-multipart = "^0.0.6"
+openai = "^0.28.1"
+pyaudio = "^0.2.13"
 
 
 [build-system]
