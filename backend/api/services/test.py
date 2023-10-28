@@ -5,6 +5,7 @@ import whisper_call
 import ChatGPT_call
 import voicevox_call
 
+
 def f():
     load_dotenv()
     openai.organization = os.environ.get('OPENAI_ORG_KEY')
