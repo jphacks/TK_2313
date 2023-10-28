@@ -35,7 +35,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
     base64str = str(base64.b64encode(voice_output[0]))
     response = {
-        'audio': base64str,
+        'kind': "receive_wav",
+        'base64': base64str,
         'text': voice_output[1]
     }
 
