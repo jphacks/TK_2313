@@ -308,12 +308,20 @@ class Chat:
             openai.organization = self.organization
         log = self.make_log()
         # print(log)
-        response = openai.ChatCompletion.create(
-            model=self.model.value,
-            messages=log,
-            functions=[func.tojson() for func in self.functions] if self.functions else None,
-            n=self.n,
-        )
+        if self.functions:
+            response = openai.ChatCompletion.create(
+                model=self.model.value,
+                messages=log,
+                functions=[func.tojson() for func in self.functions] if self.functions else None,
+                n=self.n,
+            )
+        else:
+            response = openai.ChatCompletion.create(
+                model=self.model.value,
+                messages=log,
+                n=self.n,
+            )
+
 
         return Response(response)
 
