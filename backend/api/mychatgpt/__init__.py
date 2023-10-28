@@ -3,53 +3,52 @@ import openai
 import tiktoken
 from typing import Callable
 import json
-
+import timeout_decorator
 
 class Role(Enum):
     system = "system"
     user = "user"
     assistant = "assistant"
-    function = "function"
-
-
+    function="function"
+    
 class Model(Enum):
-    gpt35 = "gpt-3.5-turbo"
-    gpt4 = "gpt-4"
+    gpt35="gpt-3.5-turbo"
+    gpt4="gpt-4"
+    
 
 
 class GPTFunctionProperties():
-    def __init__(self, name: str, param_type: str, description: str, enum: Enum = []):
+    def __init__(self,name:str,param_type:str,description:str,enum:Enum=[]):
         self.name = name
         self.param_type = param_type
         self.description = description
-        self.enum = [e.value for e in enum]
-
+        self.enum=[e.value for e in enum]
+    
     def tojson(self):
-        return {"type": self.param_type, "description": self.description}
-
+        return {"type":self.param_type,"description":self.description}
+        
 
 class GPTFunctionParam():
-    def __init__(self, properties: list[GPTFunctionProperties], required: list[GPTFunctionProperties]):
+    def __init__(self,properties:list[GPTFunctionProperties],required:list[GPTFunctionProperties]):
         self.properties = properties
         self.required = required
-
+    
     def tojson(self):
-        return {"type": "object", "properties": {prop.name: prop.tojson() for prop in self.properties},
-                "required": [prop.name for prop in self.required]}
-
-
+        return {"type":"object","properties":{prop.name:prop.tojson() for prop in self.properties},"required":[prop.name for prop in self.required]}
+        
+    
 class GPTFunction():
-    def __init__(self, name: str, description: str, param: GPTFunctionParam, func: Callable):
+    def __init__(self,name:str,description:str,param:GPTFunctionParam,func:Callable):
         self.name = name
         self.description = description
         self.param = param
         self.func = func
-
+        
     def tojson(self):
-        obj = {"name": self.name, "description": self.description}
-        obj["parameters"] = self.param.tojson()
+        obj={"name":self.name,"description":self.description}
+        obj["parameters"]=self.param.tojson()
         return obj
-
+ 
 
 class Message:
     """
@@ -57,7 +56,7 @@ class Message:
     メッセージごとにロールと内容とトークンを保持する
     """
 
-    def __init__(self, role: Role, content: str, token: int = 0, name: str = ""):
+    def __init__(self, role: Role, content: str, token: int = 0,name:str=""):
         self.role: Role = role
         self.content: str = content
         self.token: int = token
@@ -66,8 +65,8 @@ class Message:
         self.name: str = name
 
     def msg2dict(self) -> dict:
-        if self.role == Role.function:
-            return {"role": self.role.name, "content": self.content, "name": self.name}
+        if self.role==Role.function:
+            return {"role": self.role.name, "content": self.content,"name":self.name}
         return {"role": self.role.name, "content": self.content}
 
     def set_token(self, token: int) -> None:
@@ -101,7 +100,7 @@ class Response:
         self.choices: dict = response.get("choices", None)
         if self.choices:
             self.messages: list[Message] = [Message(Role(
-                choice["message"]["role"]), choice["message"]["content"]) for choice in self.choices]
+                choice["message"]["role"]), choice["message"]["content"])for choice in self.choices]
         self.created: int | None = response.get("created", None)
         self.id: str | None = response.get("id", None)
         self.model: str | None = response.get("model", None)
@@ -109,14 +108,13 @@ class Response:
             "completion_tokens", None)
         self.prompt_tokens: int | None = response["usage"].get(
             "prompt_tokens", None)
-        self.function_call: dict | None = self.choices[0]["message"].get("function_call", None)
+        self.function_call:dict|None=self.choices[0]["message"].get("function_call",None)
         if self.function_call:
             try:
-                self.function_call = {"name": self.function_call["name"],
-                                      "arguments": json.loads(self.function_call["arguments"])}
-            except:
+                self.function_call={"name":self.function_call["name"],"arguments":json.loads(self.function_call["arguments"])}
+            except:   
                 print(self.function_call["arguments"])
-                exit()
+                exit()     
 
         """
         print(self.choices)
@@ -134,9 +132,7 @@ class Chat:
     チャットのクラス
     """
 
-    def __init__(self, API_TOKEN: str, organization: str | None = None, model: Model = Model.gpt35,
-                 functions: list[GPTFunction] = [], TOKEN_LIMIT: int = 4096, n: int = 1,
-                 thin_out_flag: bool = False) -> None:
+    def __init__(self, API_TOKEN: str, organization: str | None = None, model: Model = Model.gpt35,functions:list[GPTFunction]=[], TOKEN_LIMIT: int = 4096, n: int = 1, thin_out_flag: bool = False) -> None:
         self.organization: str | None = organization
         self.history: list[Message] = []
         self.model: Model = model
@@ -144,7 +140,8 @@ class Chat:
         self.n: int = n
         self.thin_out_flag: bool = thin_out_flag
         self.API_TOKEN: str = API_TOKEN
-        self.functions = functions
+        self.functions=functions
+
 
     def add(self, message: list[Message] | Message, role: Role = Role.user, output: bool = False) -> None:
         """
@@ -171,22 +168,26 @@ class Chat:
     def completion(self, output: bool = False) -> Message:
         """
         現在の履歴の状態で返信を得る
-        戻り値はMessaegクラス
+        戻り値はMessaegeクラス
         """
+
         response = self.create()
+
+        if response.function_call:
+            for func in self.functions:
+                if func.name==response.function_call["name"]:
+                    params=[response.function_call["arguments"][param.name] for param in func.param.properties]
+                    reply=func.func(*params)
+                    reply=Message(Role.function,reply,name=func.name)
+                    self.add(reply)
+                    return self.completion(output=output)
+            else:
+                print("no function")
+                exit()
         completion_token = response.completeion_tokens
         reply: Message = response.messages[0]
         reply.set_token(completion_token)
-        if response.function_call:
-            print(response.function_call)
-            for func in self.functions:
-                if func.name == response.function_call["name"]:
-                    params = [response.function_call["arguments"][param.name] for param in func.param.properties]
-                    reply = func.func(*params)
-                    reply = Message(Role.function, reply, name=func.name)
-                    print(reply)
-                    self.add(reply)
-                    return self.completion(output=output)
+        
         completion_token = response.completeion_tokens
         reply: Message = response.messages[0]
         reply.set_token(completion_token)
@@ -194,13 +195,14 @@ class Chat:
         if output:
             print(reply)
         return reply
+    
 
-    def send(self, message: str | Message, role: Role = Role.user, output: bool = False) -> Message:
+    def send(self, message: str | Message, role: Role = Role.user, output: bool = False,stream:bool=False) -> Message:
         """
         メッセージを追加して送信して返信を得る
         messageがMessageクラスならそのまま、strならMessageクラスに変換して送信
         add+completionみたいな感じ
-        戻り値hはMessageクラス
+        戻り値はMessageクラス
         """
         if type(message) is str:
             message = Message(role, message)
@@ -216,6 +218,56 @@ class Chat:
         reply = self.completion(output=output)
         self.history.append(reply)
         return reply
+    
+    def send_stream(self,message:str|Message,role:Role=Role.user,output:bool=False):
+        if type(message) is str:
+            message = Message(role, message)
+
+        if self.get_now_token() + len(message.content) > self.TOKEN_LIMIT:
+            # トークン超過しそうなら良い感じに間引くかエラーを吐く
+            if self.thin_out_flag:
+                self.thin_out()
+            else:
+                raise Exception("token overflow")
+        self.add(message, output=output)
+        openai.api_key = self.API_TOKEN
+        if self.organization:
+            openai.organization = self.organization
+        response=openai.ChatCompletion.create(
+            model=self.model.value,
+            messages=self.make_log(),
+            functions=[func.tojson() for func in self.functions] if self.functions else None,
+            n=self.n,
+            stream=True
+        )
+        for chunk in response:
+            #try:
+                delta=chunk["choices"][0]["delta"]
+                if "function_call" in delta:
+                    function_call=delta["function_call"]
+                    if "name" not in function_call:
+                        continue
+                    
+                    for func in self.functions:
+                        if func.name==function_call["name"]:
+                            params=[function_call["arguments"][param.name] for param in func.param.properties]
+                            reply=func.func(*params)
+                            print(f"func:{func.name} reply:{reply}")
+                            reply=Message(Role.function,reply,name=func.name)
+                            for i in self.send_stream(reply):
+                                yield i
+                            break
+                    else:
+                        for i in self.send_stream(Message(Role.system,"Function not found")):
+                            yield i
+                            
+                else:
+                    if "content" in delta:
+                        yield delta["content"]
+            #except Exception as e:
+        #    print(e)
+                
+
 
     def make_log(self) -> list[dict]:
         """
@@ -246,6 +298,7 @@ class Chat:
             remove_index += 1
         self.history = self.history[remove_index:]
 
+    #@timeout_decorator.timeout(30)
     def create(self) -> Response:
         """
         openaiのAPIを叩く
@@ -255,21 +308,15 @@ class Chat:
             openai.organization = self.organization
         log = self.make_log()
         # print(log)
+        response = openai.ChatCompletion.create(
+            model=self.model.value,
+            messages=log,
+            functions=[func.tojson() for func in self.functions] if self.functions else None,
+            n=self.n,
+        )
 
-        if self.functions:
-            response = openai.ChatCompletion.create(
-                model=self.model.value,
-                messages=log,
-                functions=[func.tojson() for func in self.functions],
-                n=self.n
-            )
-        else:
-            response = openai.ChatCompletion.create(
-                model=self.model.value,
-                messages=log,
-                n=self.n
-            )
         return Response(response)
+
 
     def get_history(self) -> str:
         """
@@ -295,3 +342,5 @@ class Chat:
         ログの全削除
         """
         self.history = []
+
+
