@@ -1,3 +1,1 @@
 # Backend
-
-Backend用のディレクトリ
