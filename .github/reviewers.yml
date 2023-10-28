@@ -1,0 +1,10 @@
+addReviewers: true
+addAssignees: true
+
+# Backendチームの全員を自動的にアサインする
+reviewers:
+  - csenet
+  - seyogi
+  - Chroma7p
+
+numberOfReviewers: 0
