@@ -1,21 +1,15 @@
 [tool.poetry]
-name = "api"
+name = "tk-2313"
 version = "0.1.0"
 description = ""
 authors = ["Koichi Hirachi <kouichi.hirachi@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-fastapi = "^0.104.0"
-uvicorn = "^0.23.2"
-python-dotenv = "^1.0.0"
-python-multipart = "^0.0.6"
-openai = "^0.28.1"
-pyaudio = "^0.2.13"
-tiktoken = "^0.5.1"
+python = "^3.9"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
