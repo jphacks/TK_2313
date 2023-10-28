@@ -45,8 +45,10 @@ def vvox_test(text):
     # pya.terminate()
 
     # make random file name
-    filename = '/tmp/' + ''.join(
-        [random.choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for i in range(10)]) + '.mp3'
-    with open(filename, mode='wb') as f:
-        f.write(synthesis.content)
-        return filename
+    # filename = '/tmp/' + ''.join(
+    #     [random.choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for i in range(10)]) + '.mp3'
+    # with open(filename, mode='wb') as f:
+    #     f.write(synthesis.content)
+    #     return filename
+
+    return synthesis.content

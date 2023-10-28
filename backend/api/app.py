@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, WebSocket
 from dotenv import load_dotenv
 from fastapi.responses import StreamingResponse
 import base64
-
+import json
 import handler
 
 load_dotenv(verbose=True)
@@ -30,11 +30,17 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     rawData = await websocket.receive_bytes()
     # decode base64
-    data = base64.b64decode(rawData)
-    # save file to ./tmp directory
-    with open(f"test.wav", "wb") as buffer:
-        buffer.write(data)
-    handler.handle_voice_driven("test.wav")
+    voice_input = base64.b64decode(rawData)
+    voice_output = handler.handle_voice_driven(voice_input)
+
+    base64str = str(base64.b64encode(voice_output[0]))
+    response = {
+        'audio': base64str,
+        'text': voice_output[1]
+    }
+
+    await websocket.send_text(json.dumps(response))
+    await websocket.close()
 
 
 @app.websocket("/event/text")

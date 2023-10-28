@@ -27,12 +27,9 @@ def f():
 # def handle_event_driven(event, context):
 #     #TODO
 
-def handle_voice_driven(file_path: str):
-    # convert audioFile to bytes
-    # audio_bytes = audio_file.file.read()
-    audio_file = open(file_path, "rb")
-    transcript = whisper_call.whisper_transcription(audio_file)
+def handle_voice_driven(voice_input: bytes):
+    transcript = whisper_call.whisper_transcription(voice_input)
     replay = ChatGPT_call.GPT_call(transcript)
-    audio_fil_path = voicevox_call.vvox_test(replay)
+    audio_bytes = voicevox_call.vvox_test(replay)
     # return mp3 as bytes
-    return FileResponse(audio_fil_path)
+    return audio_bytes, replay
