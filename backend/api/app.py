@@ -25,36 +25,31 @@ async def upload_wav(file: UploadFile = File(...)):
     # save to /tmp
 
 
-@app.websocket("/event/wav")
+@app.websocket("/event")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     rawData = await websocket.receive_text()
     input = json.loads(rawData)
 
-    # decode base64
-    if (input["kind"] != "send_wav"):
-        await websocket.close()
+    # check kind types (send_wav, receive_wav, send_text, receive_text)
+
+    if input["kind"] == "near_anchor":
+        # handler.handle_near_anchor(input["anchor_id"])
         return
-    voice_input = base64.b64decode(input["base64"])
-    voice_output = handler.handle_voice_driven(voice_input)
 
-    base64str = str(base64.b64encode(voice_output[0]))
-    response = {
-        'kind': "receive_wav",
-        'base64': base64str,
-        'text': voice_output[1]
-    }
+    if input["kind"] == "send_wav":
+        voice_input = base64.b64decode(input["base64"])
+        voice_output = handler.handle_voice_driven(voice_input)
 
-    await websocket.send_text(json.dumps(response))
+        base64str = str(base64.b64encode(voice_output[0]))
+        response = {
+            'kind': "receive_wav",
+            'base64': base64str,
+            'text': voice_output[1]
+        }
+
+        await websocket.send_text(json.dumps(response))
+        await websocket.close()
+
+    # not much any types
     await websocket.close()
-
-
-@app.websocket("/event/text")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message text was: {data}")
-        if data == "close":
-            await websocket.close()
-            break
