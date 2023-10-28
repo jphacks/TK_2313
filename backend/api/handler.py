@@ -21,4 +21,6 @@ def handle_voice_driven(voice_input: bytes):
 
 
 def handle_anchor_driven(anchor_uuid: str):
-    return "Hello, World!"
+    replay = ChatGPT_call.GPT_call(anchor_uuid)
+    audio_bytes = voicevox_call.vvox_test(replay)
+    return audio_bytes, replay

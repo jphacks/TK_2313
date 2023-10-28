@@ -34,7 +34,20 @@ async def websocket_endpoint(websocket: WebSocket):
     # check kind types (send_wav, receive_wav, send_text, receive_text)
 
     if input["kind"] == "near_anchor":
-        # handler.handle_near_anchor(input["anchor_id"])
+        voice_output = handler.handle_anchor_driven(input["anchor_id"])
+
+        base64str = str(base64.b64encode(voice_output[0]))
+        # remove b' and ' from base64str
+        base64str = base64str[2:-1]
+
+        response = {
+            'kind': "receive_wav",
+            'base64': base64str,
+            'text': voice_output[1]
+        }
+
+        await websocket.send_text(json.dumps(response))
+        await websocket.close()
         return
 
     if input["kind"] == "send_wav":
