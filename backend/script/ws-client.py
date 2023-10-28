@@ -1,7 +1,7 @@
 import websockets
 import asyncio
 import base64
-import data_url
+#import data_url
 
 
 async def hello():
