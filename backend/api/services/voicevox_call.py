@@ -10,8 +10,8 @@ def vvox_test(text):
     # 音声化する文言と話者を指定(3で標準ずんだもんになる)
     params = (
         ('text', text),
-        ('speaker', 8),
-        # ('speaker', 43)
+        # ('speaker', 8),
+        ('speaker', 43)
     )
 
     # 音声合成用のクエリ作成

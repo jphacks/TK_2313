@@ -21,15 +21,17 @@ def handle_voice_driven(voice_input: bytes):
     transcript = whisper_call.whisper_transcription(voice_input)
     replay = ChatGPT_call.GPT_call(transcript)
     audio_bytes = voicevox_call.vvox_test(replay)
-    # return mp3 as bytes
+    # return wav as bytes
     return audio_bytes, replay
 
 
 def handle_anchor_driven(anchor_uuid: str):
-    response=db_client.table('SpaceAnchor').select("name","action").eq('uuid', anchor_uuid).execute()
-    data=response.data
-    if len(data)==0:
+    response = db_client.table('SpaceAnchor').select(
+        "name", "action").eq('uuid', anchor_uuid).execute()
+    action = response.data
+    if action is None:
         return None
-    if data[0]["action"]is None:
-        return None
-    return data[0]
+    transcript = whisper_call.whisper_transcription(action)
+    replay = ChatGPT_call.GPT_call(transcript)
+    audio_bytes = voicevox_call.vvox_test(replay)
+    return audio_bytes, replay, action

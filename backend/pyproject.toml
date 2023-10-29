@@ -16,6 +16,7 @@ tiktoken = "^0.5.1"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
 data-url = "^1.0.7"
 timeout-decorator = "^0.5.0"
+supabase = "^1.2.0"
 
 
 [build-system]
