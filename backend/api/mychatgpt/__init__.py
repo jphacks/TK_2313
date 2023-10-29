@@ -233,6 +233,7 @@ class Chat:
                 raise Exception("token overflow")
         self.add(message, output=output)
         openai.api_key = self.API_TOKEN
+        log = self.make_log()
         if self.organization:
             openai.organization = self.organization
         if self.functions:
