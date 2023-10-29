@@ -1,8 +1,6 @@
 import os
 import requests
 import json
-import random
-import pyaudio
 
 
 def vvox_test(text):
@@ -28,27 +26,5 @@ def vvox_test(text):
         params=params,
         data=json.dumps(query.json())
     )
-
-    # # 再生処理
-    # voice = synthesis.content
-    # pya = pyaudio.PyAudio()
-    #
-    # # サンプリングレートが24000以外だとずんだもんが高音になったり低音になったりする
-    # stream = pya.open(format=pyaudio.paInt16,
-    #                   channels=1,
-    #                   rate=24000,
-    #                   output=True)
-    #
-    # stream.write(voice)
-    # stream.stop_stream()
-    # stream.close()
-    # pya.terminate()
-
-    # make random file name
-    # filename = '/tmp/' + ''.join(
-    #     [random.choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for i in range(10)]) + '.mp3'
-    # with open(filename, mode='wb') as f:
-    #     f.write(synthesis.content)
-    #     return filename
 
     return synthesis.content
