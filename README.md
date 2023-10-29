@@ -1,6 +1,6 @@
 # スマートホームメイド
 
-[![IMAGE ALT TEXT HERE](https://jphacks.com/wp-content/uploads/2023/07/JPHACKS2023_ogp.png)](https://www.youtube.com/watch?v=yYRQEdfGjEg)
+[![IMAGE ALT TEXT HERE](https://github.com/jphacks/TK_2313/blob/b_image/3f88af7cf8a0b88f.png?raw=true))](https://www.youtube.com/watch?v=yYRQEdfGjEg)
 
 ## 製品概要
 
