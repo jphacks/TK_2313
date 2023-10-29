@@ -28,46 +28,39 @@ async def upload_wav(file: UploadFile = File(...)):
 @app.websocket("/event")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    rawData = await websocket.receive_text()
-    input = json.loads(rawData)
+    while True:
+        rawData = await websocket.receive_text()
+        input = json.loads(rawData)
 
-    # check kind types (send_wav, receive_wav, send_text, receive_text)
+        # check kind types (send_wav, receive_wav, send_text, receive_text)
 
-    if input["kind"] == "near_anchor":
-        voice_output = handler.handle_anchor_driven(input["anchor_id"])
+        if input["kind"] == "near_anchor":
+            voice_output = handler.handle_anchor_driven(input["anchor_id"])
 
-        base64str = str(base64.b64encode(voice_output[0]))
-        # remove b' and ' from base64str
-        base64str = base64str[2:-1]
+            base64str = str(base64.b64encode(voice_output[0]))
+            # remove b' and ' from base64str
+            base64str = base64str[2:-1]
 
-        response = {
-            'kind': "receive_wav",
-            'base64': base64str,
-            'text': voice_output[1]
-        }
+            response = {
+                'kind': "receive_wav",
+                'base64': base64str,
+                'text': voice_output[1]
+            }
 
-        await websocket.send_text(json.dumps(response))
-        # await websocket.close()
-        return
+            await websocket.send_text(json.dumps(response))
 
-    if input["kind"] == "send_wav":
-        voice_input = base64.b64decode(input["base64"])
-        voice_output = handler.handle_voice_driven(voice_input)
+        if input["kind"] == "send_wav":
+            voice_input = base64.b64decode(input["base64"])
+            voice_output = handler.handle_voice_driven(voice_input)
 
-        base64str = str(base64.b64encode(voice_output[0]))
-        # remove b' and ' from base64str
-        base64str = base64str[2:-1]
+            base64str = str(base64.b64encode(voice_output[0]))
+            # remove b' and ' from base64str
+            base64str = base64str[2:-1]
 
-        response = {
-            'kind': "receive_wav",
-            'base64': base64str,
-            'text': voice_output[1]
-        }
+            response = {
+                'kind': "receive_wav",
+                'base64': base64str,
+                'text': voice_output[1]
+            }
 
-        await websocket.send_text(json.dumps(response))
-        # await websocket.close()
-        return
-
-    # not much any types
-    # await websocket.close()
-    return
+            await websocket.send_text(json.dumps(response))
