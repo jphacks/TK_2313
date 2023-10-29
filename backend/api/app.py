@@ -47,7 +47,7 @@ async def websocket_endpoint(websocket: WebSocket):
         }
 
         await websocket.send_text(json.dumps(response))
-        await websocket.close()
+        # await websocket.close()
         return
 
     if input["kind"] == "send_wav":
@@ -65,9 +65,9 @@ async def websocket_endpoint(websocket: WebSocket):
         }
 
         await websocket.send_text(json.dumps(response))
-        await websocket.close()
+        # await websocket.close()
         return
 
     # not much any types
-    await websocket.close()
+    # await websocket.close()
     return
