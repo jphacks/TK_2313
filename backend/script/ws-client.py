@@ -2,13 +2,15 @@ import websockets
 import asyncio
 import base64
 import json
-# import data_url
+from dotenv import load_dotenv
+import os
+
+load_dotenv(verbose=True)
 
 
 async def hello():
-    # uri = "ws://localhost:8000/event/wav"
-    uri = "wss://k1hmbp.tail5590e.ts.net/event/wav"
-    fname = "output2.wav"
+    uri = os.getenv("WS_URI")
+    fname = os.getenv("FILE_NAME")
     with open(fname, "rb") as f:
         data = f.read()
     s = str(base64.b64encode(data))
