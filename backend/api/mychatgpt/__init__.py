@@ -239,6 +239,7 @@ class Chat:
             response = openai.ChatCompletion.create(
                 model=self.model.value,
                 messages=log,
+                max_tokens=50,
                 functions=[func.tojson()
                            for func in self.functions] if self.functions else None,
                 n=self.n,
