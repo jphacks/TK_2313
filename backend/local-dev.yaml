@@ -1,0 +1,22 @@
+services:
+  api:
+    build: ./
+    networks:
+      - cf-tunnel-net
+    env_file:
+      - .env
+  cf-tunnel:
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    networks:
+      - cf-tunnel-net
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+  voicevox:
+    image: voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+    networks:
+      - cf-tunnel-net
+networks:
+  cf-tunnel-net:
+    driver: bridge
