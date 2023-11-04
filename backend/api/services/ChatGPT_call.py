@@ -164,6 +164,9 @@ chat.add(prompt, role=Role.system, output=True)  # ログへ追加(返答を得�
 # print(f"{reply.role.name}:{reply.content}({reply.token})")
 
 def GPT_call(text):
+    if chat.get_now_token() >3000:
+        chat.thin_out(1000)
+        chat.history=[Message(Role.system, prompt)]+chat.history
     chat.add(text, output=True)
     reply: Message = chat.completion(output=True)
     return reply.content
