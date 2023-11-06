@@ -134,7 +134,7 @@ turn_off_light1 = GPTFunction(
     "turn_off_light1", "ライトをオフにします", GPTFunctionParam([], []), lambda: turn_off())
 
 # チャットログのインスタンスの作成
-chat = Chat(API_TOKEN, model=Model.gpt4,
+chat = Chat(API_TOKEN, model=Model.gpt35,
             functions=[set_light1_color, set_light1_brightness, turn_on_light1, turn_off_light1])
 
 with open("./prompt/hard_takanawa.txt", "r", encoding="utf-8") as f:
